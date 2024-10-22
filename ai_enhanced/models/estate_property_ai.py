@@ -1,11 +1,8 @@
-
 from odoo import api, fields, models
 import requests
 
 class EstatePropertyAI(models.Model):
     _inherit = 'estate.property'
-
-    ai_generated_description = fields.Text(string="AI Generated Description")
 
     def action_generate_ai_description(self):
         # Example of calling an external AI server API to generate property description
@@ -23,8 +20,7 @@ class EstatePropertyAI(models.Model):
             "files": [],
         }
         response = requests.post(url, json=payload, headers=headers)
-        print(response.json())
         if response.status_code == 200:
-            self.ai_generated_description = response.json().get("answer")
+            self.description = response.json().get("answer")
         else:
             raise ValueError("Failed to get response from AI server")

@@ -5,11 +5,12 @@
         <field name="model">estate.property</field>
         <field name="inherit_id" ref="estate.view_estate_property_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//sheet/group" position="after">
-                <group>
-                    <field name="ai_generated_description" readonly="1"/>
-                    <button name="action_generate_ai_description" type="object" string="AI Generate Description" class="btn-primary"/>
-                </group>
+            <xpath expr="//field[@name='description']" position="replace">
+                <label class="o_form_label" for="description">Description</label>
+                <div class="o_input_with_button" style="display: inline-flex; align-items: center; width: 100%;">
+                    <field name="description"/>
+                    <button type="object" class="btn btn-primary fa fa-magic ml-2" tabindex="-1" draggable="false" aria-label="AI Generate" data-tooltip="AI Generate" title="Generate AI Description" name="action_generate_ai_description"/>
+                </div>
             </xpath>
         </field>
     </record>
