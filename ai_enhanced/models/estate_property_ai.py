@@ -11,9 +11,10 @@ class EstatePropertyAI(models.Model):
             'Content-Type': 'application/json',
             'Authorization': 'Bearer app-MxpJL6WwXRaZAD4PMenwVhnX',
         }
+        name_value = self.name if self.name else ''
         payload = {
             "inputs": {},
-            "query": '測試',
+            "query": name_value,
             "response_mode": 'blocking',
             "conversation_id": '',
             "user": 'odoo',
