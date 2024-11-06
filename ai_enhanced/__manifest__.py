@@ -16,12 +16,13 @@
     'category': 'Tutorials/Estate',
     'version': '0.1',
     # any module necessary for this one to work correctly
-    'depends': ['base', 'web', 'estate'],
+    'depends': ['base', 'web', 'estate', 'project'],
     'data': [
         'security/ir.model.access.csv',
         'views/estate_property_ai_views.xml',
+        'views/project_task_ai_views.xml',
     ],
-    'application': True,
+    'application': False,
     'installable': True,
     'license': 'AGPL-3'
 }
