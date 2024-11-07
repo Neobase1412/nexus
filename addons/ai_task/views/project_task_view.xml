@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_task_form_ai" model="ir.ui.view">
+        <field name="name">project.task.form.view.ai.button</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <!-- Add AI Button -->
+            <xpath expr="//header" position="inside">
+                <button name="action_send_to_ai"
+                        type="object"
+                        string="Generate AI Response"
+                        icon="fa-magic"
+                        class="oe_highlight"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
