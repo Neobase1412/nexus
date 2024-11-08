@@ -1,7 +1,6 @@
 import json
 import re
 import requests
-import time
 from odoo import api, fields, models
 
 class ProjectTask(models.Model):
@@ -63,51 +62,33 @@ class ProjectTask(models.Model):
             if response.status_code == 200:
                 response_data = response.json()
                 answer = response_data.get('answer', 'No answer provided')
-                conversation_id = response_data.get('conversation_id')
 
+                # 處理 answer 作為字串形式的 JSON 陣列
                 try:
-                    sub_tasks_data = json.loads(json.dumps(eval(answer)))
-                    should_create_sub_task = len(sub_tasks_data) > 1
+                    parsed_sub_tasks = json.loads(json.dumps(eval(answer)))
+                    should_create_sub_task = len(parsed_sub_tasks) > 1
                 except (json.JSONDecodeError, SyntaxError) as e:
-                    sub_tasks_data = []
+                    parsed_sub_tasks = []
                     should_create_sub_task = False
+                    task.message_post(body=f"解析 AI 回應失敗：{e}")
+                
+                # 根據 parsed_sub_tasks 建立子任務或更新描述
+                if should_create_sub_task:
+                    for sub_task in parsed_sub_tasks:
+                        title = sub_task.get('title', 'Untitled Task')
+                        document = sub_task.get('document', 'No description provided')
 
-                if conversation_id:
-                    second_request_data = {
-                        "inputs": {},
-                        "query": "go",
-                        "response_mode": "blocking",
-                        "conversation_id": conversation_id,
-                        "user": self.env.user.login,
-                    }
-
-                    second_response = requests.post(
-                        'https://neobase.app/v1/chat-messages',
-                        headers=headers,
-                        json=second_request_data
-                    )
-
-                    if second_response.status_code == 200:
-                        second_response_data = second_response.json()
-                        second_answer = second_response_data.get('answer', 'No answer provided')
-
-                        if should_create_sub_task:
-                            sub_task_descriptions = second_answer.split('---')
-                            for index, desc in enumerate(sub_task_descriptions, start=1):
-                                sub_task_name = f"Sub Task {index}"
-                                self.env['project.task'].create({
-                                    'name': sub_task_name,
-                                    'description': self.markdown_to_html(desc),
-                                    'project_id': task.project_id.id,
-                                    'parent_id': task.id,
-                                })
-                            task.message_post(body="已根據 AI 的回應建立子任務。")
-                        else:
-                            # 將 Markdown 內容轉換為 HTML
-                            html_description = self.markdown_to_html(second_answer)
-                            task.description = html_description
-                            task.message_post(body="已根據 AI 的回應更新任務描述。")
-                    else:
-                        task.message_post(body="第二次請求失敗，狀態碼：" + str(second_response.status_code))
+                        self.env['project.task'].create({
+                            'name': title,
+                            'description': self.markdown_to_html(document),
+                            'project_id': task.project_id.id,
+                            'parent_id': task.id,
+                        })
+                    task.message_post(body="已根據 AI 的回應建立子任務。")
+                else:
+                    # 將單一任務描述轉換為 HTML
+                    html_description = self.markdown_to_html(answer)
+                    task.description = html_description
+                    task.message_post(body="已根據 AI 的回應更新任務描述。")
             else:
-                task.message_post(body="第一次請求失敗，狀態碼：" + str(response.status_code))
+                task.message_post(body="請求失敗，狀態碼：" + str(response.status_code))
