@@ -1,0 +1,12 @@
+<!-- views/task_assignment_menus.xml -->
+<odoo>
+    <!-- 動作定義 -->
+    <record id="action_task_assignment" model="ir.actions.act_window">
+        <field name="name">Task Assignments</field>
+        <field name="res_model">task.assignment</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- 菜單項目 -->
+    <menuitem id="menu_task_assignment_root" name="Task Assignments" parent="project.menu_main_pm" sequence="10" action="action_task_assignment"/>
+</odoo>
