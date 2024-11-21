@@ -6,6 +6,17 @@ from odoo import api, fields, models
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
+    # 新增屬性
+    work_hour = fields.Float(string="Work Hours", help="Estimated work hours for this task.")
+    estimate_time = fields.Float(string="Estimate Time (hrs)", help="Time required to complete the task.")
+    # 修改 priority 欄位以支持 1-5 的選項
+    priority = fields.Selection(
+        [('1', 'Very Low'), ('2', 'Low'), ('3', 'Medium'), ('4', 'High'), ('5', 'Very High')],
+        string="Priority",
+        default='3',
+        help="Priority level for the task, ranging from 1 (Very Low) to 5 (Very High)."
+    )
+
     def markdown_to_html(self, markdown_text):
         """Convert a subset of Markdown to HTML with improved parsing for lists and headers."""
         # Convert headers (e.g., # Header, ## Header, ### Header)
@@ -38,6 +49,9 @@ class ProjectTask(models.Model):
                 "task_name": task.name,
                 "task_description": task.description,
                 "task_deadline": task.date_deadline.isoformat() if task.date_deadline else None,
+                "work_hour": task.work_hour,
+                "estimate_time": task.estimate_time,
+                "priority": task.priority,  # Priority now supports values '1' to '5'
             }
             request_data = {
                 "inputs": {
