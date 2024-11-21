@@ -38,10 +38,11 @@ class ProjectTask(models.Model):
                 "task_name": task.name,
                 "task_description": task.description,
                 "task_deadline": task.date_deadline.isoformat() if task.date_deadline else None,
-                "project_name": task.project_id.name,
             }
             request_data = {
-                "inputs": {},
+                "inputs": {
+                    "project_name": task.project_id.name,
+                },
                 "query": json.dumps(query_data),
                 "response_mode": "blocking",
                 "conversation_id": "",
