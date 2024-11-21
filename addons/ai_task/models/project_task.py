@@ -88,8 +88,13 @@ class ProjectTask(models.Model):
                     task.message_post(body="已根據 AI 的回應建立子任務。")
                 else:
                     # 將單一任務描述轉換為 HTML
-                    html_description = self.markdown_to_html(answer)
-                    task.description = html_description
-                    task.message_post(body="已根據 AI 的回應更新任務描述。")
+                    if parsed_sub_tasks:
+                        single_task = parsed_sub_tasks[0]
+                        document = single_task.get('document', 'No description provided')
+                        html_description = self.markdown_to_html(document)
+                        task.description = html_description
+                        task.message_post(body="已根據 AI 的回應更新任務描述。")
+                    else:
+                        task.message_post(body="AI 回應格式無法解析，無法更新任務。")
             else:
                 task.message_post(body="請求失敗，狀態碼：" + str(response.status_code))
