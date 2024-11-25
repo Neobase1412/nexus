@@ -6,6 +6,17 @@ from odoo import api, fields, models
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
+    # 新增屬性
+    work_hour = fields.Float(string="Work Hours", help="Estimated work hours for this task.")
+    estimate_time = fields.Float(string="Estimate Time (hrs)", help="Time required to complete the task.")
+    # 修改 priority 欄位以支持 1-5 的選項
+    priority = fields.Selection(
+        [('1', 'Very Low'), ('2', 'Low'), ('3', 'Medium'), ('4', 'High'), ('5', 'Very High')],
+        string="Priority",
+        default='3',
+        help="Priority level for the task, ranging from 1 (Very Low) to 5 (Very High)."
+    )
+
     def markdown_to_html(self, markdown_text):
         """Convert a subset of Markdown to HTML with improved parsing for lists and headers."""
         # Convert headers (e.g., # Header, ## Header, ### Header)
@@ -38,10 +49,14 @@ class ProjectTask(models.Model):
                 "task_name": task.name,
                 "task_description": task.description,
                 "task_deadline": task.date_deadline.isoformat() if task.date_deadline else None,
-                "project_name": task.project_id.name,
+                "work_hour": task.work_hour,
+                "estimate_time": task.estimate_time,
+                "priority": task.priority,  # Priority now supports values '1' to '5'
             }
             request_data = {
-                "inputs": {},
+                "inputs": {
+                    "project_name": task.project_id.name,
+                },
                 "query": json.dumps(query_data),
                 "response_mode": "blocking",
                 "conversation_id": "",
@@ -87,8 +102,13 @@ class ProjectTask(models.Model):
                     task.message_post(body="已根據 AI 的回應建立子任務。")
                 else:
                     # 將單一任務描述轉換為 HTML
-                    html_description = self.markdown_to_html(answer)
-                    task.description = html_description
-                    task.message_post(body="已根據 AI 的回應更新任務描述。")
+                    if parsed_sub_tasks:
+                        single_task = parsed_sub_tasks[0]
+                        document = single_task.get('document', 'No description provided')
+                        html_description = self.markdown_to_html(document)
+                        task.description = html_description
+                        task.message_post(body="已根據 AI 的回應更新任務描述。")
+                    else:
+                        task.message_post(body="AI 回應格式無法解析，無法更新任務。")
             else:
                 task.message_post(body="請求失敗，狀態碼：" + str(response.status_code))

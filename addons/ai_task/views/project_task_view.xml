@@ -12,6 +12,15 @@
                         icon="fa-magic"
                         class="oe_highlight"/>
             </xpath>
+            <!-- Add custom fields -->
+            <xpath expr="//sheet" position="inside">
+                <group string="Task Details">
+                    <field name="work_hour"/>
+                    <field name="estimate_time"/>
+                    <!-- Use star widget for priority -->
+                    <field name="priority" widget="priority"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>
